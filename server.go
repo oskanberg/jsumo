@@ -71,6 +71,5 @@ func main() {
 	games["first"] = NewGame()
 	http.Handle("/", http.FileServer(http.Dir("./public/")))
 	http.HandleFunc("/api/v1/GameState", apiHandler)
-	http.HandleFunc("/api/v1/GameState", apiHandler)
 	http.ListenAndServe(":3000", nil)
 }

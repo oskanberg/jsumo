@@ -55,6 +55,8 @@ func UpdateMoves(w http.ResponseWriter, r *http.Request) {
 // just for now, so we don't have to simulate the game,
 // take their word for it
 func UpdateGameState(w http.ResponseWriter, r *http.Request) {
+	log.Printf("API  :: %s %s", r.Method, r.URL)
+
 	// get game id from request
 	gameId := r.URL.Query().Get("id")
 	if gameId == "" {

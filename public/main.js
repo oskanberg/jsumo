@@ -1,10 +1,12 @@
 var WIDTH = 1920;
 var HEIGHT = 1080;
 var GAME_ID = 'first';
-var TURN = 0;
+var ROUND = -1;
 
 var renderer, container, world;
 
+var logicInterval;
+var hasMoved = false;
 var balls = {};
 var dragArrow;
 window.forces = [];
@@ -13,7 +15,7 @@ function initialise() {
     init();
     animate();
     // make physics speed independent from render speed
-    setInterval(logic, 1000 / 60.0);
+    logicInterval = setInterval(logic, 1000 / 60.0);
 }
 
 function init() {
@@ -44,7 +46,7 @@ function init() {
     dragArrow = new DragArrow();
     container.addChild(dragArrow.graphics);
 
-    buildGameState(GAME_ID, TURN);
+    buildGameState(GAME_ID, ROUND);
 }
 
 
@@ -58,13 +60,42 @@ function logic() {
     // Move physics bodies forward in time
     world.step(1 / 60.0);
     // Transfer positions of the physics objects to Pixi.js
+
+    var moving = false;
     for (var name in balls) {
         balls[name].updateLocation();
+        if (Math.abs(balls[name].body.velocity[0]) > 0.1) {
+            hasMoved = true;
+            moving = true;
+        }
+        if (Math.abs(balls[name].body.velocity[1]) > 0.1) {
+            hasMoved = true;
+            moving = true;
+        }
+    }
+
+    if (!moving && hasMoved) {
+        console.log("Stopped!");
+        clearInterval(logicInterval);
+
+        var state = {};
+        for (var name in balls) {
+            // console.log(balls[name]);
+            state[name] = {
+                Location: {
+                    X: balls[name].graphics.position.x,
+                    Y: balls[name].graphics.position.y
+                },
+                // TODO
+                Radius: balls[name].graphics.hitArea.radius
+            };
+        }
+        reportState(state, ROUND + 1);
     }
 }
 
-function buildGameState(gameId, turn) {
-    getJSON('/api/v1/GameState?id=' + gameId + '&round=' + turn).then(function(data) {
+function buildGameState(gameId, round) {
+    getJSON('/api/v1/GameState?id=' + gameId + '&round=' + round).then(function(data) {
         var currBall, newBall;
         for (var name in data.Balls) {
             currBall = data.Balls[name];
@@ -82,7 +113,7 @@ function buildGameState(gameId, turn) {
 
             balls[name] = newBall;
         }
-        
+
         // if not all players have moved
         if (Object.keys(data.Moves).length != Object.keys(data.Balls).length) {
             return;
@@ -120,6 +151,14 @@ window.makeMove = function(move) {
         Player: 'johnson',
         Move: move
     }).then(function(data) {
+        console.log(data);
+    }, function(error) {
+        console.log(error);
+    });
+}
+
+window.reportState = function(state, round) {
+    patchJSON('/api/v1/GameState?id=first&round=' + round, state).then(function(data) {
         console.log(data);
     }, function(error) {
         console.log(error);

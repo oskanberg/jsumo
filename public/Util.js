@@ -60,9 +60,3 @@ function patchJSON(url, data) {
         xhr.send(JSON.stringify(data));
     });
 };
-// function distanceBetween(a, b) {
-//     var aPos = new Victor(a.position.x, a.position.y);
-//     var bPos = new Victor(b.position.x, b.position.y);
-//     aPos.subtract(bPos);
-//     return aPos
-// }

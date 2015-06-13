@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -47,9 +48,9 @@ func UpdateMoves(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	round := &game.Rounds[len(game.Rounds)-1]
+	round := game.Rounds[len(game.Rounds)-1]
 	// TODO: check validity of move?
-	round.Moves[move.Player] = move.Move
+	round.Moves[move.Player] = &move.Move
 }
 
 // just for now, so we don't have to simulate the game,
@@ -94,7 +95,7 @@ func UpdateGameState(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// parse state update
-	var newState map[string]Ball
+	var newState map[string]*Ball
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&newState)
 	if err != nil {
@@ -104,13 +105,18 @@ func UpdateGameState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// if this was the last round, add a new one
+	// if this is the new (uncreated) round, create it
 	// TODO: fix security
-	if requestedRound == len(game.Rounds)-1 {
+	if requestedRound == len(game.Rounds) {
+		fmt.Println("creating new round")
 		game.Rounds = append(game.Rounds, GameState{
 			Balls: newState,
-			Moves: make(map[string]Vector),
+			Moves: make(map[string]*Vector),
+			Round: requestedRound,
 		})
 	}
+
+	// otherwise, don't do anything (for now)
+	// TODO
 
 }

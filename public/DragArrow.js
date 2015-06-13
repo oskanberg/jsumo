@@ -1,12 +1,13 @@
-DragArrow = function() {
+DragArrow = function(addForceFn, makeMoveFn) {
+    this.addForce = addForceFn;
+    this.makeMove = makeMoveFn;
+
     this.graphics = new PIXI.Graphics();
     this.dragging = false;
     this.startPoint = null;
     this.dragTarget = null;
     this.vectorRepresentation = null;
 };
-
-DragArrow.prototype.graphics = null;
 
 DragArrow.prototype.drawToPointer = function(ev) {
     var newPosition = ev.data.getLocalPosition(this.graphics.parent);
@@ -38,7 +39,7 @@ DragArrow.prototype.dragMove = function(ev) {
 };
 
 DragArrow.prototype.exertForce = function() {
-    window.forces.push({
+    this.addForce({
         target: this.dragTarget,
         force: {
             x: this.vectorRepresentation.x * -200,
@@ -48,10 +49,10 @@ DragArrow.prototype.exertForce = function() {
 };
 
 DragArrow.prototype.dragEnd = function(ev) {
-    this.exertForce();
-    window.makeMove({
-            X: this.vectorRepresentation.x * -200,
-            Y: this.vectorRepresentation.y * -200
+    // this.exertForce();
+    this.makeMove({
+        X: this.vectorRepresentation.x * -200,
+        Y: this.vectorRepresentation.y * -200
     });
     this.dragging = false;
     this.graphics.clear();

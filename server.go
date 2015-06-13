@@ -20,8 +20,9 @@ type MoveUpdate struct {
 }
 
 type GameState struct {
-	Balls map[string]Ball
-	Moves map[string]Vector
+	Balls map[string]*Ball
+	Moves map[string]*Vector
+	Round int
 }
 
 type Game struct {
@@ -29,7 +30,7 @@ type Game struct {
 	Players []string
 }
 
-var games map[string]Game = make(map[string]Game)
+var games map[string]*Game = make(map[string]*Game)
 
 func apiHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -44,19 +45,20 @@ func apiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewGame() Game {
+func NewGame() *Game {
 	// arbitrary first round
 	firstRound := GameState{
-		Balls: map[string]Ball{
-			"johnson": Ball{
+		Balls: map[string]*Ball{
+			"johnson": &Ball{
 				Location: Vector{
-					X: 100,
-					Y: 100,
+					X: 0,
+					Y: 0,
 				},
 				Radius: 15,
 			},
 		},
-		Moves: make(map[string]Vector),
+		Moves: make(map[string]*Vector),
+		Round: 0,
 	}
 
 	newGame := Game{
@@ -64,7 +66,7 @@ func NewGame() Game {
 		Players: []string{"johnson"},
 	}
 
-	return newGame
+	return &newGame
 }
 
 func main() {
